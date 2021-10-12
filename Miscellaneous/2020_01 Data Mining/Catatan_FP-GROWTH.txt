@@ -1,0 +1,192 @@
+FP_GROWTG 
+
+-. Fp adalah Frequent Pattern
+-. Cara FP :
+	-. Bangun FP-Tree (Struktur pohon)
+	-. Ekstrak itemset dan frekuensinya (Kemunculan) dari struktur FP-Tree
+
+-. Contoh 
+	---------------------------------
+	|Transaksi	| 	Item			|
+	---------------------------------
+	|T100		|	I1, I2, I5		|
+	|T200		|	I2, I4			|
+	|T300		| 	I2, I3			|
+	|T400		|	I1, I2, I4		|
+	|T500		|	I1, I3			|
+	|T600		|	I2, I3			|
+	|T700		|	I1, I3			|
+	|T800		|	I1, I2, I3, I5	|
+	|T900		|	I1, I2, I3		|
+	---------------------------------
+
+-. Struktur FP dari atas :
+	-. Root (Awal / Kosong)
+		-. Ambil t100 (Hitung Frekuensi kemunculan) :
+			I1 : 6
+			I2 : 7
+			I5 : 2
+
+		-. Diurutkan berdasarkan jumlah terbesar , sehingga menjadi :
+			I2 : 7
+			I1 : 6
+			I5 : 2
+
+		-. Sehingga Struktur Tree nya :
+
+			Null - I2:1 - I1:1 - I5:1
+
+		-. Ambil yang t200 :
+			I2 : 7
+			I4 : 2
+
+		-.Diurutkan Lagi :
+			I2 : 7
+			I4 : 2
+
+		-. Struktur Tree nya 
+
+					  	 - I1:1 - I5:1
+			Null - I2:2 <
+					  	 - I4:1
+
+		-. Ambil t300 :
+			I2 : 7 
+			I3 : 6
+
+		-. Diurutkan 
+			I2 : 7 
+			I3 : 6
+
+		-. Struktur Tree nya :
+
+				  		  - I1:1 - I5:1
+			Null - I2:3 < - I4:1
+					  	  - I3:1
+
+		-. Ambil t400
+			I1 : 6
+			I2 : 7
+			I4 : 2
+
+		-. Urutkan 
+			I2 : 7
+			I1 : 6
+			I4 : 2
+
+		-. Struktur Tree nya :
+
+				  		  		   - I5:1
+				  		  - I1:2 < 
+				  		  		   - I4:1
+			Null - I2:4 < - I4:1
+					  	  - I3:1
+
+		-. Ambil t500
+			I1 : 6
+			I3 : 6
+
+		-. Urutkan 
+			I1 : 6
+			I3 : 6
+
+		-. Struktur Tree nya
+
+				  		  		   - I5:1
+				  		  - I1:2 < 
+				  		  		   - I4:1
+			Null - I2:4 < - I4:1
+					  	  - I3:1
+				 - I1:1   - I3:1
+
+		-. Ambil t600
+			I2 : 7
+			I3 : 6
+
+		-. Urutkan
+			I2 : 7
+			I3 : 6
+
+		-. Struktur Tree nya 
+
+				  		  		   - I5:1
+				  		  - I1:2 < 
+				  		  		   - I4:1
+			Null - I2:5 < - I4:1
+					  	  - I3:2
+				 - I1:1   - I3:1
+
+		-. Ambil t700
+			I1 : 6
+			I3 : 6
+
+		-. Urutkan
+			I1 : 6
+			I3 : 6
+
+		-. Struktur Tree nya
+
+				  		  		   - I5:1
+				  		  - I1:2 < 
+				  		  		   - I4:1
+			Null - I2:5 < - I4:1
+					  	  - I3:2
+				 - I1:2   - I3:2
+
+		-. Ambil t800
+			I1 : 6
+			I2 : 7
+			I3 : 6
+			I5 : 2
+
+		-. Urutkan 
+			I2 : 7
+			I1 : 6
+			I3 : 6
+			I5 : 2
+
+		-. Struktur Tree nya 
+
+				  		  		   - I5:1
+				  		  - I1:3 < - I4:1
+				  		  		   - I3:1 - I5:1
+			Null - I2:6 < - I4:1
+					  	  - I3:2
+				 - I1:2   - I3:2
+
+	    -. Ambil t900
+	    	I1 : 6 
+	    	I2 : 7
+	    	I3 : 6
+
+	    -. Urutkan
+	    	I2 : 7
+	    	I1 : 6 
+	    	I3 : 6
+
+	   	-. Struktur Tree nya 
+
+	   			  		  		   - I5:1
+				  		  - I1:4 < - I4:1
+				  		  		   - I3:2 - I5:1
+			Null - I2:7 < - I4:1
+					  	  - I3:2
+				 - I1:2   - I3:2
+
+
+		-. Jika Item I5 maka jalur nya adalah 
+			-. I2 - I2 /= (I1, I2)
+			-. I2 - I1 - I3 /= (I1, I2, I3)
+			-. Terbanyak nya : I1:2 I2:2
+
+		-. Jiki item I4 maka jalur nya adalah 
+			-. I2 - I1 /= (I1, I2)
+			-. I2 /= (I2)
+			-. Terbanyak nya : I1:1 I2:2 
+
+
+
+
+
+
+			
