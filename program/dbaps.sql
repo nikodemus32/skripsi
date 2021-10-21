@@ -87,7 +87,7 @@ DELIMITER ##
     SELECT count(DISTINCT gender) into i from tbldataprocess;        
     SET iwhile = 0;
     WHILE iwhile<>i DO
-        SELECT DISTINCT gender INTO spinformation FROM tbldataprocess limit iwhile, 1;
+        SELECT DISTINCT gender INTO spinformation FROM tbldataprocess order by gender ASC limit iwhile, 1;
         INSERT INTO tblchange(column_code, column_name, information, content) VALUES (1, 'gender', spinformation, iwhile);
         UPDATE tbldataprocess set gender=iwhile where gender=spinformation;
     set iwhile= iwhile +1;
@@ -97,7 +97,7 @@ DELIMITER ##
     SELECT count(DISTINCT customer_type) into i from tbldataprocess;        
     SET iwhile = 0;
     WHILE iwhile <> i DO
-        SELECT DISTINCT customer_type INTO spinformation FROM tbldataprocess limit iwhile, 1;
+        SELECT DISTINCT customer_type INTO spinformation FROM tbldataprocess order by customer_type ASC limit iwhile, 1;
         INSERT INTO tblchange(column_code, column_name, information, content) VALUES (2, 'customer_type', spinformation, iwhile);
         UPDATE tbldataprocess set customer_type=iwhile where customer_type=spinformation;
     set iwhile= iwhile +1;
@@ -113,20 +113,20 @@ DELIMITER ##
     UPDATE tbldataprocess set age=2 where age > 51;
 
     -- Type Of Travel
-    SELECT count(DISTINCT type_of_travel) into i from tbldataprocess;        
+    SELECT count(DISTINCT type_of_travel) into i from tbldataprocess;
     SET iwhile = 0;
     WHILE iwhile <> i DO
-        SELECT DISTINCT type_of_travel INTO spinformation FROM tbldataprocess limit iwhile, 1;
+        SELECT DISTINCT type_of_travel INTO spinformation FROM tbldataprocess order by type_of_travel ASC limit iwhile, 1;
         INSERT INTO tblchange(column_code, column_name, information, content) VALUES (4, 'type_of_travel', spinformation, iwhile);
         UPDATE tbldataprocess set type_of_travel=iwhile where type_of_travel=spinformation;
     set iwhile= iwhile +1;
     END WHILE ;
 
     -- Customer Class
-    SELECT count(DISTINCT customer_class) into i from tbldataprocess;        
+    SELECT count(DISTINCT customer_class) into i from tbldataprocess;
     SET iwhile = 0;
     WHILE iwhile <> i DO
-        SELECT DISTINCT customer_class into spinformation FROM tbldataprocess limit iwhile, 1;        
+        SELECT DISTINCT customer_class into spinformation FROM tbldataprocess order by customer_class ASC limit iwhile, 1;        
         INSERT INTO tblchange(column_code, column_name, information, content) VALUES (5, 'customer_class', spinformation, iwhile);
         UPDATE tbldataprocess set customer_class=iwhile where customer_class=spinformation;
     set iwhile= iwhile +1;
@@ -285,7 +285,7 @@ DELIMITER ##
     SELECT count(DISTINCT satisfaction) into i from tbldataprocess;        
     SET iwhile = 0;
     WHILE iwhile <> i DO
-        SELECT DISTINCT satisfaction into spinformation FROM tbldataprocess limit iwhile, 1;
+        SELECT DISTINCT satisfaction into spinformation FROM tbldataprocess order by satisfaction ASC limit iwhile, 1;
         INSERT INTO tblchange(column_code, column_name, information, content) VALUES (23, 'satisfaction', spinformation, iwhile);
         UPDATE tbldataprocess set satisfaction=iwhile where satisfaction=spinformation;
     set iwhile= iwhile +1;
@@ -857,9 +857,6 @@ BEGIN
 
         -- END INITIALITATION
 
-        -- SELECT count(*) INTO total_training FROM tbldatatraining;
-        -- SELECT total_training;
-
         -- TRAINING
         WHILE i_training <= total_training DO    
             IF (SELECT COUNT(*) FROM tbldatatraining WHERE id=i_training) = 1 THEN            
@@ -930,8 +927,6 @@ BEGIN
                 END IF;
 
                 SELECT satisfaction INTO t FROM tbldatatraining WHERE id=i_training;
-                -- SELECT ws, wns;
-                -- SELECT cj, t;
 
                 -- cj 1 satisfied, 0 dissatisfied
                 IF cj = 1 AND t = 1 THEN
@@ -1072,11 +1067,53 @@ BEGIN
                 SELECT satisfaction INTO w23t FROM tbldatatesting WHERE id=i_testing;
 
             SET ws = ed(
-                    w1t, w1s, w2t, w2s, w3t, w3s, w4t, w4s, w5t, w5s, w6t, w6s, w7t, w7s, w8t, w8s, w9t, w9s, w10t, w10s, w11t, w11s, w12t, w12s, w13t, w13s, w14t, w14s, w15t, w15s, w16t, w16s, w17t, w17s, w18t, w18s, w19t, w19s, w20t, w20s, w21t, w21s, w22t, w22s
+                    w1t, w1s
+                    , w2t, w2s
+                    , w3t, w3s
+                    , w4t, w4s
+                    , w5t, w5s
+                    , w6t, w6s
+                    , w7t, w7s
+                    , w8t, w8s
+                    , w9t, w9s
+                    , w10t, w10s
+                    , w11t, w11s
+                    , w12t, w12s
+                    , w13t, w13s
+                    , w14t, w14s
+                    , w15t, w15s
+                    , w16t, w16s
+                    , w17t, w17s
+                    , w18t, w18s
+                    , w19t, w19s
+                    , w20t, w20s
+                    , w21t, w21s
+                    , w22t, w22s
                 );
 
             SET wns = ed(
-                    w1t, w1ns, w2t, w2ns, w3t, w3ns, w4t, w4ns, w5t, w5ns, w6t, w6ns, w7t, w7ns, w8t, w8ns, w9t, w9ns, w10t, w10ns, w11t, w11ns, w12t, w12ns, w13t, w13ns, w14t, w14ns, w15t, w15ns, w16t, w16ns, w17t, w17ns, w18t, w18ns, w19t, w19ns, w20t, w20ns, w21t, w21ns, w22t, w22ns
+                    w1t, w1ns
+                    , w2t, w2ns
+                    , w3t, w3ns
+                    , w4t, w4ns
+                    , w5t, w5ns
+                    , w6t, w6ns
+                    , w7t, w7ns
+                    , w8t, w8ns
+                    , w9t, w9ns
+                    , w10t, w10ns
+                    , w11t, w11ns
+                    , w12t, w12ns
+                    , w13t, w13ns
+                    , w14t, w14ns
+                    , w15t, w15ns
+                    , w16t, w16ns
+                    , w17t, w17ns
+                    , w18t, w18ns
+                    , w19t, w19ns
+                    , w20t, w20ns
+                    , w21t, w21ns
+                    , w22t, w22ns
                 );
 
 
