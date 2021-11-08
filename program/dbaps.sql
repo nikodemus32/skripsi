@@ -57,7 +57,7 @@ CREATE TABLE tbldataprocess(
 ) engine=InnoDB;
 
 
--- LOAD DATA LOCAL INFILE 'airline_passenger_satisfaction - Copy.csv'
+-- LOAD DATA LOCAL INFILE 'airline_passenger_satisfaction.csv'
 LOAD DATA LOCAL INFILE 'dbaps.csv'
     INTO TABLE tbldata
     FIELDS TERMINATED BY ','
@@ -390,6 +390,7 @@ CREATE TABLE tblaccuracy (
     id INT PRIMARY KEY AUTO_INCREMENT
     , algoritma VARCHAR(15)
     , testing INT
+    , total_training INT
     , total_data INT
     , tp INT
     , tn INT
@@ -400,17 +401,17 @@ CREATE TABLE tblaccuracy (
     , accuracy FLOAT(4,2)
 );
 
-INSERT INTO tblaccuracy(algoritma, testing, tp,tn,fp,fn,tnull,fnull) VALUES
-('Bayesian', 1,0,0,0,0,0,0),
-('Bayesian', 2,0,0,0,0,0,0),
-('Bayesian', 3,0,0,0,0,0,0),
-('Bayesian', 4,0,0,0,0,0,0),
-('Bayesian', 5,0,0,0,0,0,0),
-('LVQ', 1,0,0,0,0,0,0),
-('LVQ', 2,0,0,0,0,0,0),
-('LVQ', 3,0,0,0,0,0,0),
-('LVQ', 4,0,0,0,0,0,0),
-('LVQ', 5,0,0,0,0,0,0);
+INSERT INTO tblaccuracy(algoritma, testing, total_training, tp,tn,fp,fn,tnull,fnull) VALUES
+('Bayesian', 1,0,0,0,0,0,0,0),
+('Bayesian', 2,0,0,0,0,0,0,0),
+('Bayesian', 3,0,0,0,0,0,0,0),
+('Bayesian', 4,0,0,0,0,0,0,0),
+('Bayesian', 5,0,0,0,0,0,0,0),
+('LVQ', 1,0,0,0,0,0,0,0),
+('LVQ', 2,0,0,0,0,0,0,0),
+('LVQ', 3,0,0,0,0,0,0,0),
+('LVQ', 4,0,0,0,0,0,0,0),
+('LVQ', 5,0,0,0,0,0,0,0);
 
 DELIMITER ##
 -- CREATE PROCEDURE bayesian(number_of_testing INT)
@@ -424,7 +425,7 @@ BEGIN
         , prob_onboard_service_s, prob_leg_room_service_s, prob_baggage_handling_s, prob_checkin_service_s, prob_inflight_service_s
         , prob_cleanliness_s, prob_departure_delay_in_minutes_s, prob_arrival_delay_in_minutes_s    
     FLOAT(30,30) DEFAULT 0;
-    DECLARE total_satisfied, total_notsatisfied FLOAT(30,0);
+    DECLARE total_satisfied, total_notsatisfied FLOAT(30,20);
 
     DECLARE 
         prob_notsatisfied, prob_gender_ns, prob_customer_type_ns, prob_age_ns, prob_type_of_travel_ns, prob_customer_class_ns
@@ -499,70 +500,70 @@ BEGIN
         SET prob_flight_distance_ns = (SELECT count(flight_distance) FROM tbldatatraining WHERE flight_distance=(SELECT flight_distance FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
         
         -- Inflight Wifi Service
-        SET prob_inflight_wifi_service_s  = (SELECT count(inflight_wifi_service) FROM tbldatatraining WHERE inflight_wifi_service=(SELECT inflight_wifi_service FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_inflight_wifi_service_s  = (SELECT count(inflight_wifi_service) FROM tbldatatraining WHERE inflight_wifi_service=(SELECT inflight_wifi_service FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_inflight_wifi_service_ns = (SELECT count(inflight_wifi_service) FROM tbldatatraining WHERE inflight_wifi_service=(SELECT inflight_wifi_service FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
         
         -- Departure Arrival Time Convenient
-        SET prob_departure_arrival_time_convenient_s  = (SELECT count(departure_arrival_time_convenient) FROM tbldatatraining WHERE departure_arrival_time_convenient=(SELECT departure_arrival_time_convenient FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_departure_arrival_time_convenient_s  = (SELECT count(departure_arrival_time_convenient) FROM tbldatatraining WHERE departure_arrival_time_convenient=(SELECT departure_arrival_time_convenient FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_departure_arrival_time_convenient_ns = (SELECT count(departure_arrival_time_convenient) FROM tbldatatraining WHERE departure_arrival_time_convenient=(SELECT departure_arrival_time_convenient FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
         
         -- Ease of Online Booking
-        SET prob_ease_of_online_booking_s  = (SELECT count(ease_of_online_booking) FROM tbldatatraining WHERE ease_of_online_booking=(SELECT ease_of_online_booking FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_ease_of_online_booking_s  = (SELECT count(ease_of_online_booking) FROM tbldatatraining WHERE ease_of_online_booking=(SELECT ease_of_online_booking FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_ease_of_online_booking_ns = (SELECT count(ease_of_online_booking) FROM tbldatatraining WHERE ease_of_online_booking=(SELECT ease_of_online_booking FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
 
         -- Gate Location
-        SET prob_gate_location_s  = (SELECT count(gate_location) FROM tbldatatraining WHERE gate_location=(SELECT gate_location FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_gate_location_s  = (SELECT count(gate_location) FROM tbldatatraining WHERE gate_location=(SELECT gate_location FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_gate_location_ns = (SELECT count(gate_location) FROM tbldatatraining WHERE gate_location=(SELECT gate_location FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
 
         -- Food and Drink
-        SET prob_food_and_drink_s  = (SELECT count(food_and_drink) FROM tbldatatraining WHERE food_and_drink=(SELECT food_and_drink FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_food_and_drink_s  = (SELECT count(food_and_drink) FROM tbldatatraining WHERE food_and_drink=(SELECT food_and_drink FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_food_and_drink_ns = (SELECT count(food_and_drink) FROM tbldatatraining WHERE food_and_drink=(SELECT food_and_drink FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
 
         -- Online Boarding
-        SET prob_online_boarding_s = (SELECT count(online_boarding) FROM tbldatatraining WHERE online_boarding=(SELECT online_boarding FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_online_boarding_s = (SELECT count(online_boarding) FROM tbldatatraining WHERE online_boarding=(SELECT online_boarding FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_online_boarding_ns = (SELECT count(online_boarding) FROM tbldatatraining WHERE online_boarding=(SELECT online_boarding FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
         
         -- Seat Comfort
-        SET prob_seat_comfort_s  = (SELECT count(seat_comfort) FROM tbldatatraining WHERE seat_comfort=(SELECT seat_comfort FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_seat_comfort_s  = (SELECT count(seat_comfort) FROM tbldatatraining WHERE seat_comfort=(SELECT seat_comfort FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_seat_comfort_ns = (SELECT count(seat_comfort) FROM tbldatatraining WHERE seat_comfort=(SELECT seat_comfort FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
         
         -- Inflight Enterteinment
-        SET prob_inflight_entertainment_s  = (SELECT count(inflight_entertainment) FROM tbldatatraining WHERE inflight_entertainment=(SELECT inflight_entertainment FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_inflight_entertainment_s  = (SELECT count(inflight_entertainment) FROM tbldatatraining WHERE inflight_entertainment=(SELECT inflight_entertainment FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_inflight_entertainment_ns = (SELECT count(inflight_entertainment) FROM tbldatatraining WHERE inflight_entertainment=(SELECT inflight_entertainment FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
 
         -- Onboard Service
-        SET prob_onboard_service_s  = (SELECT count(onboard_service) FROM tbldatatraining WHERE onboard_service=(SELECT onboard_service FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_onboard_service_s  = (SELECT count(onboard_service) FROM tbldatatraining WHERE onboard_service=(SELECT onboard_service FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_onboard_service_ns = (SELECT count(onboard_service) FROM tbldatatraining WHERE onboard_service=(SELECT onboard_service FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
         
         -- Leg Room Service
-        SET prob_leg_room_service_s  = (SELECT count(leg_room_service) FROM tbldatatraining WHERE leg_room_service=(SELECT leg_room_service FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_leg_room_service_s  = (SELECT count(leg_room_service) FROM tbldatatraining WHERE leg_room_service=(SELECT leg_room_service FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_leg_room_service_ns = (SELECT count(leg_room_service) FROM tbldatatraining WHERE leg_room_service=(SELECT leg_room_service FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
 
         -- Baggage Handling
-        SET prob_baggage_handling_s  = (SELECT count(baggage_handling) FROM tbldatatraining WHERE baggage_handling=(SELECT baggage_handling FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_baggage_handling_s  = (SELECT count(baggage_handling) FROM tbldatatraining WHERE baggage_handling=(SELECT baggage_handling FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_baggage_handling_ns = (SELECT count(baggage_handling) FROM tbldatatraining WHERE baggage_handling=(SELECT baggage_handling FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
 
         -- Checkin Service
-        SET prob_checkin_service_s  = (SELECT count(checkin_service) FROM tbldatatraining WHERE checkin_service=(SELECT checkin_service FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_checkin_service_s  = (SELECT count(checkin_service) FROM tbldatatraining WHERE checkin_service=(SELECT checkin_service FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_checkin_service_ns = (SELECT count(checkin_service) FROM tbldatatraining WHERE checkin_service=(SELECT checkin_service FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
 
         -- Inflight Service
-        SET prob_inflight_service_s  = (SELECT count(inflight_service) FROM tbldatatraining WHERE inflight_service=(SELECT inflight_service FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_inflight_service_s  = (SELECT count(inflight_service) FROM tbldatatraining WHERE inflight_service=(SELECT inflight_service FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_inflight_service_ns = (SELECT count(inflight_service) FROM tbldatatraining WHERE inflight_service=(SELECT inflight_service FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
 
         -- Cleanliness
-        SET prob_cleanliness_s  = (SELECT count(cleanliness) FROM tbldatatraining WHERE cleanliness=(SELECT cleanliness FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_cleanliness_s  = (SELECT count(cleanliness) FROM tbldatatraining WHERE cleanliness=(SELECT cleanliness FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_cleanliness_ns = (SELECT count(cleanliness) FROM tbldatatraining WHERE cleanliness=(SELECT cleanliness FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
         
         -- Departure Delay In Minutes
-        SET prob_departure_delay_in_minutes_s  = (SELECT count(departure_delay_in_minutes) FROM tbldatatraining WHERE departure_delay_in_minutes=(SELECT departure_delay_in_minutes FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
+        SET prob_departure_delay_in_minutes_s  = (SELECT count(departure_delay_in_minutes) FROM tbldatatraining WHERE departure_delay_in_minutes=(SELECT departure_delay_in_minutes FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_departure_delay_in_minutes_ns = (SELECT count(departure_delay_in_minutes) FROM tbldatatraining WHERE departure_delay_in_minutes=(SELECT departure_delay_in_minutes FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
         
         -- Arrival Delay In Minutes
-        SET prob_arrival_delay_in_minutes_s  = (SELECT count(arrival_delay_in_minutes) FROM tbldatatraining WHERE arrival_delay_in_minutes=(SELECT arrival_delay_in_minutes FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;  
+        SET prob_arrival_delay_in_minutes_s  = (SELECT count(arrival_delay_in_minutes) FROM tbldatatraining WHERE arrival_delay_in_minutes=(SELECT arrival_delay_in_minutes FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;
         SET prob_arrival_delay_in_minutes_ns = (SELECT count(arrival_delay_in_minutes) FROM tbldatatraining WHERE arrival_delay_in_minutes=(SELECT arrival_delay_in_minutes FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
         
-        SET prediksi_s  = prob_satisfied* prob_gender_s* prob_customer_type_s* prob_age_s* prob_type_of_travel_s* prob_customer_class_s* prob_flight_distance_s* prob_inflight_wifi_service_s* prob_departure_arrival_time_convenient_s* prob_ease_of_online_booking_s* prob_gate_location_s* prob_food_and_drink_s* prob_online_boarding_s* prob_seat_comfort_s* prob_inflight_entertainment_s* prob_onboard_service_s* prob_leg_room_service_s* prob_baggage_handling_s* prob_checkin_service_s* prob_inflight_service_s* prob_cleanliness_s* prob_departure_delay_in_minutes_s* prob_arrival_delay_in_minutes_s;        
+        SET prediksi_s  = prob_satisfied* prob_gender_s* prob_customer_type_s* prob_age_s* prob_type_of_travel_s* prob_customer_class_s* prob_flight_distance_s* prob_inflight_wifi_service_s* prob_departure_arrival_time_convenient_s* prob_ease_of_online_booking_s* prob_gate_location_s* prob_food_and_drink_s* prob_online_boarding_s* prob_seat_comfort_s* prob_inflight_entertainment_s* prob_onboard_service_s* prob_leg_room_service_s* prob_baggage_handling_s* prob_checkin_service_s* prob_inflight_service_s* prob_cleanliness_s* prob_departure_delay_in_minutes_s* prob_arrival_delay_in_minutes_s;
         SET prediksi_ns =prob_notsatisfied* prob_gender_ns* prob_customer_type_ns* prob_age_ns* prob_type_of_travel_ns* prob_customer_class_ns* prob_flight_distance_ns* prob_inflight_wifi_service_ns* prob_departure_arrival_time_convenient_ns* prob_ease_of_online_booking_ns* prob_gate_location_ns* prob_food_and_drink_ns* prob_online_boarding_ns* prob_seat_comfort_ns* prob_inflight_entertainment_ns* prob_onboard_service_ns* prob_leg_room_service_ns* prob_baggage_handling_ns* prob_checkin_service_ns* prob_inflight_service_ns* prob_cleanliness_ns* prob_departure_delay_in_minutes_ns* prob_arrival_delay_in_minutes_ns;
 
         SELECT satisfaction INTO info_satisfaction from tbldatatesting where id = i_testing;
@@ -571,10 +572,10 @@ BEGIN
         IF info_satisfaction = 0 THEN -- actual not satisfied
             IF prediksi_s < prediksi_ns THEN
                 UPDATE tblaccuracy SET tn=tn+1 WHERE algoritma="Bayesian" AND testing=testing_ke;
-            ELSEIF prediksi_s > prediksi_ns THEN                 
+            ELSEIF prediksi_s > prediksi_ns THEN
                 UPDATE tblaccuracy SET fp=fp+1 WHERE algoritma="Bayesian" AND testing=testing_ke;
             ELSEIF prediksi_s = 0 AND prediksi_ns = 0 THEN 
-                UPDATE tblaccuracy SET fnull=fnull+1 WHERE algoritma="Bayesian" AND testing=testing_ke;                
+                UPDATE tblaccuracy SET fnull=fnull+1 WHERE algoritma="Bayesian" AND testing=testing_ke;
             END IF;
         ELSEIF info_satisfaction = 1 THEN -- actual satisfied
             IF prediksi_s < prediksi_ns THEN 
@@ -583,7 +584,7 @@ BEGIN
                 UPDATE tblaccuracy SET tp=tp+1 WHERE algoritma="Bayesian" AND testing=testing_ke;
             ELSEIF prediksi_s = 0 AND prediksi_ns = 0 THEN 
                 UPDATE tblaccuracy SET tnull=tnull+1 WHERE algoritma="Bayesian" AND testing=testing_ke;
-            END IF;        
+            END IF;
         END IF;
         SET i_testing = i_testing+1;
         END WHILE;
@@ -1035,6 +1036,7 @@ BEGIN
                     SET i_training = total_training+1;
                 END IF;
             END IF;
+            UPDATE tblaccuracy SET total_training = total_training+1;
         SET i_training = i_training + 1;
         END WHILE;
         -- END TRAINING
