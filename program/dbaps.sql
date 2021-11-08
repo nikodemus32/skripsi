@@ -285,7 +285,7 @@ DELIMITER ##
     SELECT count(DISTINCT satisfaction) into i from tbldataprocess;        
     SET iwhile = 0;
     WHILE iwhile <> i DO
-        SELECT DISTINCT satisfaction into spinformation FROM tbldataprocess order by satisfaction ASC limit iwhile, 1;
+        SELECT DISTINCT satisfaction into spinformation FROM tbldataprocess order by satisfaction asc limit iwhile, 1;
         INSERT INTO tblchange(column_code, column_name, information, content) VALUES (23, 'satisfaction', spinformation, iwhile);
         UPDATE tbldataprocess set satisfaction=iwhile where satisfaction=spinformation;
     set iwhile= iwhile +1;
@@ -485,7 +485,7 @@ BEGIN
         -- AGE
         SET prob_age_s  = (SELECT count(age) FROM tbldatatraining WHERE age=(SELECT age FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
         SET prob_age_ns = (SELECT count(age) FROM tbldatatraining WHERE age=(SELECT age FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
-        
+
         -- Type Of Travel
         SET prob_type_of_travel_s  = (SELECT count(type_of_travel) FROM tbldatatraining WHERE type_of_travel=(SELECT type_of_travel FROM tbldatatesting where id=i_testing) AND satisfaction =1) / total_satisfied;    
         SET prob_type_of_travel_ns = (SELECT count(type_of_travel) FROM tbldatatraining WHERE type_of_travel=(SELECT type_of_travel FROM tbldatatesting where id=i_testing) AND satisfaction =0) / total_notsatisfied;
