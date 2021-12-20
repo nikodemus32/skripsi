@@ -462,6 +462,7 @@ CREATE TABLE tblaccuracy (
     , testing INT
     , total_data_training INT
     , total_data INT
+    , total_training INT
     , tp INT
     , tn INT
     , fp INT
@@ -471,13 +472,43 @@ CREATE TABLE tblaccuracy (
     , accuracy FLOAT(4,2)
 );
 
-INSERT INTO tblaccuracy(algoritma, testing, total_data_training, tp,tn,fp,fn,tnull,fnull) VALUES
-('Bayesian', 1,0,0,0,0,0,0,0)
-,('Bayesian', 2,0,0,0,0,0,0,0)
-,('Bayesian', 3,0,0,0,0,0,0,0)
-,('Bayesian', 4,0,0,0,0,0,0,0)
-,('Bayesian', 5,0,0,0,0,0,0,0)
-;
+-- INSERT INTO tblaccuracy(algoritma, testing, total_data_training, tp,tn,fp,fn,tnull,fnull) VALUES
+-- ('Bayesian', 1,0,0,0,0,0,0,0)
+-- ,('Bayesian', 2,0,0,0,0,0,0,0)
+-- ,('Bayesian', 3,0,0,0,0,0,0,0)
+-- ,('Bayesian', 4,0,0,0,0,0,0,0)
+-- ,('Bayesian', 5,0,0,0,0,0,0,0)
+-- ;
+
+CREATE TABLE tblW(
+    id INT PRIMARY KEY AUTO_INCREMENT
+    ,testing INT
+    ,alpha FLOAT(30,20)
+    ,eps FLOAT(30,20)
+    ,w1 FLOAT(30,20)
+    ,w2 FLOAT(30,20)
+    ,w3 FLOAT(30,20)
+    ,w4 FLOAT(30,20)
+    ,w5 FLOAT(30,20)
+    ,w6 FLOAT(30,20)
+    ,w7 FLOAT(30,20)
+    ,w8 FLOAT(30,20)
+    ,w9 FLOAT(30,20)
+    ,w10 FLOAT(30,20)
+    ,w11 FLOAT(30,20)
+    ,w12 FLOAT(30,20)
+    ,w13 FLOAT(30,20)
+    ,w14 FLOAT(30,20)
+    ,w15 FLOAT(30,20)
+    ,w16 FLOAT(30,20)
+    ,w17 FLOAT(30,20)
+    ,w18 FLOAT(30,20)
+    ,w19 FLOAT(30,20)
+    ,w20 FLOAT(30,20)
+    ,w21 FLOAT(30,20)
+    ,w22 FLOAT(30,20)
+    ,w23 FLOAT(30,20)
+);
 -- ,('LVQ', 1,0,0,0,0,0,0,0)
 -- ,('LVQ', 2,0,0,0,0,0,0,0)
 -- ,('LVQ', 3,0,0,0,0,0,0,0)
@@ -839,20 +870,21 @@ DROP PROCEDURE IF EXISTS lvq;
         -- Weight of training
         DECLARE w1t,w2t,w3t,w4t,w5t,w6t,w7t,w8t,w9t,w10t,w11t,w12t,w13t,w14t,w15t,w16t,w17t,w18t,w19t,w20t,w21t,w22t,w23t FLOAT(30,20) DEFAULT 0;
         -- Get id for initial class satisfied and not
-        DECLARE ids, idns, cj, t INT DEFAULT 0;
+        DECLARE ids, idns, cj, t, epoch, maxepoch,pepoch INT DEFAULT 0;
 
         DECLARE tn_lvq, fp_lvq, fn_lvq, tp_lvq INT DEFAULT 0;
 
         DECLARE ws, wns, wt FLOAT(30,20) DEFAULT 0;
-        DECLARE alpha, eps, err FLOAT(30,20) DEFAULT 0;
+        DECLARE alpha, eps, err, temp_alpha FLOAT(30,20) DEFAULT 0;
         DECLARE info_satisfaction VARCHAR(2);
         
         DECLARE prediction INT DEFAULT 0;
-        DECLARE i, testing_ke, total_training, total_testing, i_testing, i_training, total_data INT DEFAULT 0;
+        DECLARE i, testing_ke, total_training, total_testing, i_testing, i_training, temp_i_training,
+            total_data, ptotal_data_training INT DEFAULT 0;
         
         SELECT COUNT(*) INTO total_data FROM tbldataprocess;
         SET testing_ke = number_of_testing;
-
+        SET maxepoch=5;
 
         -- WHILE testing_ke <= 5 DO
         
@@ -878,8 +910,8 @@ DROP PROCEDURE IF EXISTS lvq;
                 id > total_training
                 AND id <= ( total_training + total_testing);
                 
-            INSERT INTO tblaccuracy(algoritma, testing, total_data_training, total_data, tp, tn, fp,fn,tnull, fnull, accuracy) VALUES
-            ('LVQ', testing_ke,0,0,0,0,0,0,0,0,0);
+            INSERT INTO tblaccuracy(algoritma, testing, total_data_training, total_data,total_training, tp, tn, fp,fn,tnull, fnull, accuracy) VALUES
+            ('LVQ', testing_ke,0,0,0,0,0,0,0,0,0,0);
 
             -- INITIALITATION
             IF pAlpha=0 THEN
@@ -954,189 +986,229 @@ DROP PROCEDURE IF EXISTS lvq;
             -- END INITIALITATION
 
             -- TRAINING
-            WHILE (i_training <= total_training) or (alpha > eps) DO
-                -- IF (SELECT COUNT(*) FROM tbldatatraining WHERE id=i_training) = 1 THEN            
-                    SELECT gender INTO w1t FROM tbldatatraining WHERE id=i_training;
-                        SELECT customer_type INTO w2t FROM tbldatatraining WHERE id=i_training;
-                        SELECT age INTO w3t FROM tbldatatraining WHERE id=i_training;
-                        SELECT type_of_travel INTO w4t FROM tbldatatraining WHERE id=i_training;
-                        SELECT customer_class INTO w5t FROM tbldatatraining WHERE id=i_training;
-                        SELECT flight_distance INTO w6t FROM tbldatatraining WHERE id=i_training;
-                        SELECT inflight_wifi_service INTO w7t FROM tbldatatraining WHERE id=i_training;
-                        SELECT departure_arrival_time_convenient INTO w8t FROM tbldatatraining WHERE id=i_training;
-                        SELECT ease_of_online_booking INTO w9t FROM tbldatatraining WHERE id=i_training;
-                        SELECT gate_location INTO w10t FROM tbldatatraining WHERE id=i_training;
-                        SELECT food_and_drink INTO w11t FROM tbldatatraining WHERE id=i_training;
-                        SELECT online_boarding INTO w12t FROM tbldatatraining WHERE id=i_training;
-                        SELECT seat_comfort INTO w13t FROM tbldatatraining WHERE id=i_training;
-                        SELECT inflight_entertainment INTO w14t FROM tbldatatraining WHERE id=i_training;
-                        SELECT onboard_service INTO w15t FROM tbldatatraining WHERE id=i_training;
-                        SELECT leg_room_service INTO w16t FROM tbldatatraining WHERE id=i_training;
-                        SELECT baggage_handling INTO w17t FROM tbldatatraining WHERE id=i_training;
-                        SELECT checkin_service INTO w18t FROM tbldatatraining WHERE id=i_training;
-                        SELECT inflight_service INTO w19t FROM tbldatatraining WHERE id=i_training;
-                        SELECT cleanliness INTO w20t FROM tbldatatraining WHERE id=i_training;
-                        SELECT departure_delay_in_minutes INTO w21t FROM tbldatatraining WHERE id=i_training;
-                        SELECT arrival_delay_in_minutes INTO w22t FROM tbldatatraining WHERE id=i_training;
-                        SELECT satisfaction INTO w23t FROM tbldatatraining WHERE id=i_training;
-                    
-                    -- SELECT
-                    --     i_training as '1'
-                    --     , ROUND(w1t,2) as w1t
-                    --     , ROUND(w2t,2) as w2t
-                    --     , ROUND(w3t,2) as w3t
-                    --     , ROUND(w4t,2) as w4t
-                    --     , ROUND(w5t,2) as w5t
-                    --     , ROUND(w6t,2) as w6t
-                    --     , ROUND(w7t,2) as w7t
-                    --     , ROUND(w8t,2) as w8t
-                    --     , ROUND(w9t,2) as w9t
-                    --     , ROUND(w10t,2) as w10t
-                    --     , ROUND(w11t,2) as w11t
-                    --     , ROUND(w12t,2) as w12t
-                    --     , ROUND(w13t,2) as w13t
-                    --     , ROUND(w14t,2) as w14t
-                    --     , ROUND(w15t,2) as w15t
-                    --     , ROUND(w16t,2) as w16t
-                    --     , ROUND(w17t,2) as w17t
-                    --     , ROUND(w18t,2) as w18t
-                    --     , ROUND(w19t,2) as w19t
-                    --     , ROUND(w20t,2) as w20t
-                    --     , ROUND(w21t,2) as w21t
-                    --     , ROUND(w22t,2) as w22t
-                    --     , ROUND(w23t,2) as w23t
-                    --     ;
-                    SET ws = ed(
-                        w1t, w1s, w2t, w2s, w3t, w3s, w4t, w4s, w5t, w5s, w6t, w6s, w7t, w7s, w8t, w8s, w9t, w9s, w10t, w10s, w11t, w11s, w12t, w12s, w13t, w13s, w14t, w14s, w15t, w15s, w16t, w16s, w17t, w17s, w18t, w18s, w19t, w19s, w20t, w20s, w21t, w21s, w22t, w22s
-                    );
+            SET temp_alpha = alpha;
+            WHILE epoch < maxepoch DO
+                SET i_training = 0;
+                SET temp_i_training = 0;
+                SET alpha=temp_alpha;
+                algolvq: WHILE (i_training <= total_training) or (alpha >= eps) DO
+                    IF (alpha >= eps) THEN
+                        SELECT gender INTO w1t FROM tbldatatraining WHERE id=i_training;
+                            SELECT customer_type INTO w2t FROM tbldatatraining WHERE id=i_training;
+                            SELECT age INTO w3t FROM tbldatatraining WHERE id=i_training;
+                            SELECT type_of_travel INTO w4t FROM tbldatatraining WHERE id=i_training;
+                            SELECT customer_class INTO w5t FROM tbldatatraining WHERE id=i_training;
+                            SELECT flight_distance INTO w6t FROM tbldatatraining WHERE id=i_training;
+                            SELECT inflight_wifi_service INTO w7t FROM tbldatatraining WHERE id=i_training;
+                            SELECT departure_arrival_time_convenient INTO w8t FROM tbldatatraining WHERE id=i_training;
+                            SELECT ease_of_online_booking INTO w9t FROM tbldatatraining WHERE id=i_training;
+                            SELECT gate_location INTO w10t FROM tbldatatraining WHERE id=i_training;
+                            SELECT food_and_drink INTO w11t FROM tbldatatraining WHERE id=i_training;
+                            SELECT online_boarding INTO w12t FROM tbldatatraining WHERE id=i_training;
+                            SELECT seat_comfort INTO w13t FROM tbldatatraining WHERE id=i_training;
+                            SELECT inflight_entertainment INTO w14t FROM tbldatatraining WHERE id=i_training;
+                            SELECT onboard_service INTO w15t FROM tbldatatraining WHERE id=i_training;
+                            SELECT leg_room_service INTO w16t FROM tbldatatraining WHERE id=i_training;
+                            SELECT baggage_handling INTO w17t FROM tbldatatraining WHERE id=i_training;
+                            SELECT checkin_service INTO w18t FROM tbldatatraining WHERE id=i_training;
+                            SELECT inflight_service INTO w19t FROM tbldatatraining WHERE id=i_training;
+                            SELECT cleanliness INTO w20t FROM tbldatatraining WHERE id=i_training;
+                            SELECT departure_delay_in_minutes INTO w21t FROM tbldatatraining WHERE id=i_training;
+                            SELECT arrival_delay_in_minutes INTO w22t FROM tbldatatraining WHERE id=i_training;
+                            SELECT satisfaction INTO w23t FROM tbldatatraining WHERE id=i_training;                                            
+                        SET ws = ed(w1t, w1s, w2t, w2s, w3t, w3s, w4t, w4s, w5t, w5s, w6t, w6s, w7t, w7s, w8t, w8s, w9t, w9s, w10t, w10s, w11t, w11s, w12t, w12s, w13t, w13s, w14t, w14s, w15t, w15s, w16t, w16s, w17t, w17s, w18t, w18s, w19t, w19s, w20t, w20s, w21t, w21s, w22t, w22s);
+                        SET wns = ed(w1t, w1ns, w2t, w2ns, w3t, w3ns, w4t, w4ns, w5t, w5ns, w6t, w6ns, w7t, w7ns, w8t, w8ns, w9t, w9ns, w10t, w10ns, w11t, w11ns, w12t, w12ns, w13t, w13ns, w14t, w14ns, w15t, w15ns, w16t, w16ns, w17t, w17ns, w18t, w18ns, w19t, w19ns, w20t, w20ns, w21t, w21ns, w22t, w22ns);
+                        
+                        IF ws < wns THEN SET cj = 1;
+                            ELSEIF ws > wns THEN SET cj = 0;
+                            ELSE SET cj = 1;
+                            END IF;
+                        SELECT satisfaction INTO t FROM tbldatatraining WHERE id=i_training;
+                        -- cj 1 satisfied, 0 dissatisfied
+                        IF cj = 1 AND t = 1 THEN
+                            SET w1s = w1s + (alpha * (w1t - w1s));
+                            SET w2s = w2s + (alpha * (w2t - w2s));
+                            SET w3s = w3s + (alpha * (w3t - w3s));
+                            SET w4s = w4s + (alpha * (w4t - w4s));
+                            SET w5s = w5s + (alpha * (w5t - w5s));
+                            SET w6s = w6s + (alpha * (w6t - w6s));
+                            SET w7s = w7s + (alpha * (w7t - w7s));
+                            SET w8s = w8s + (alpha * (w8t - w8s));
+                            SET w9s = w9s + (alpha * (w9t - w9s));
+                            SET w10s = w10s + (alpha * (w10t - w10s));
+                            SET w11s = w11s + (alpha * (w11t - w11s));
+                            SET w12s = w12s + (alpha * (w12t - w12s));
+                            SET w13s = w13s + (alpha * (w13t - w13s));
+                            SET w14s = w14s + (alpha * (w14t - w14s));
+                            SET w15s = w15s + (alpha * (w15t - w15s));
+                            SET w16s = w16s + (alpha * (w16t - w16s));
+                            SET w17s = w17s + (alpha * (w17t - w17s));
+                            SET w18s = w18s + (alpha * (w18t - w18s));
+                            SET w19s = w19s + (alpha * (w19t - w19s));
+                            SET w20s = w20s + (alpha * (w20t - w20s));
+                            SET w21s = w21s + (alpha * (w21t - w21s));
+                            SET w22s = w22s + (alpha * (w22t - w22s));
 
-                    SET wns = ed(
-                        w1t, w1ns, w2t, w2ns, w3t, w3ns, w4t, w4ns, w5t, w5ns, w6t, w6ns, w7t, w7ns, w8t, w8ns, w9t, w9ns, w10t, w10ns, w11t, w11ns, w12t, w12ns, w13t, w13ns, w14t, w14ns, w15t, w15ns, w16t, w16ns, w17t, w17ns, w18t, w18ns, w19t, w19ns, w20t, w20ns, w21t, w21ns, w22t, w22ns
-                    );
-                                
-                    IF ws < wns THEN
-                        SET cj = 1;
-                    ELSEIF ws > wns THEN
-                        SET cj = 0;
-                    ELSE 
-                        SET cj = 1;
+                        ELSEIF cj = 0 AND t = 0 THEN
+                            SET w1ns = w1ns + (alpha * (w1t - w1ns));
+                            SET w2ns = w2ns + (alpha * (w2t - w2ns));
+                            SET w3ns = w3ns + (alpha * (w3t - w3ns));
+                            SET w4ns = w4ns + (alpha * (w4t - w4ns));
+                            SET w5ns = w5ns + (alpha * (w5t - w5ns));
+                            SET w6ns = w6ns + (alpha * (w6t - w6ns));
+                            SET w7ns = w7ns + (alpha * (w7t - w7ns));
+                            SET w8ns = w8ns + (alpha * (w8t - w8ns));
+                            SET w9ns = w9ns + (alpha * (w9t - w9ns));
+                            SET w10ns = w10ns + (alpha * (w10t - w10ns));
+                            SET w11ns = w11ns + (alpha * (w11t - w11ns));
+                            SET w12ns = w12ns + (alpha * (w12t - w12ns));
+                            SET w13ns = w13ns + (alpha * (w13t - w13ns));
+                            SET w14ns = w14ns + (alpha * (w14t - w14ns));
+                            SET w15ns = w15ns + (alpha * (w15t - w15ns));
+                            SET w16ns = w16ns + (alpha * (w16t - w16ns));
+                            SET w17ns = w17ns + (alpha * (w17t - w17ns));
+                            SET w18ns = w18ns + (alpha * (w18t - w18ns));
+                            SET w19ns = w19ns + (alpha * (w19t - w19ns));
+                            SET w20ns = w20ns + (alpha * (w20t - w20ns));
+                            SET w21ns = w21ns + (alpha * (w21t - w21ns));
+                            SET w22ns = w22ns + (alpha * (w22t - w22ns));
+
+                        ELSEIF cj = 0 AND t = 1 THEN                
+                            SET w1ns = w1ns - (alpha * (w1t - w1ns));
+                            SET w2ns = w2ns - (alpha * (w2t - w2ns));
+                            SET w3ns = w3ns - (alpha * (w3t - w3ns));
+                            SET w4ns = w4ns - (alpha * (w4t - w4ns));
+                            SET w5ns = w5ns - (alpha * (w5t - w5ns));
+                            SET w6ns = w6ns - (alpha * (w6t - w6ns));
+                            SET w7ns = w7ns - (alpha * (w7t - w7ns));
+                            SET w8ns = w8ns - (alpha * (w8t - w8ns));
+                            SET w9ns = w9ns - (alpha * (w9t - w9ns));
+                            SET w10ns = w10ns - (alpha * (w10t - w10ns));
+                            SET w11ns = w11ns - (alpha * (w11t - w11ns));
+                            SET w12ns = w12ns - (alpha * (w12t - w12ns));
+                            SET w13ns = w13ns - (alpha * (w13t - w13ns));
+                            SET w14ns = w14ns - (alpha * (w14t - w14ns));
+                            SET w15ns = w15ns - (alpha * (w15t - w15ns));
+                            SET w16ns = w16ns - (alpha * (w16t - w16ns));
+                            SET w17ns = w17ns - (alpha * (w17t - w17ns));
+                            SET w18ns = w18ns - (alpha * (w18t - w18ns));
+                            SET w19ns = w19ns - (alpha * (w19t - w19ns));
+                            SET w20ns = w20ns - (alpha * (w20t - w20ns));
+                            SET w21ns = w21ns - (alpha * (w21t - w21ns));
+                            SET w22ns = w22ns - (alpha * (w22t - w22ns));
+
+                        ELSEIF cj = 1 AND t = 0 THEN                
+                            SET w1s = w1s - (alpha * (w1t - w1s));
+                            SET w2s = w2s - (alpha * (w2t - w2s));
+                            SET w3s = w3s - (alpha * (w3t - w3s));
+                            SET w4s = w4s - (alpha * (w4t - w4s));
+                            SET w5s = w5s - (alpha * (w5t - w5s));
+                            SET w6s = w6s - (alpha * (w6t - w6s));
+                            SET w7s = w7s - (alpha * (w7t - w7s));
+                            SET w8s = w8s - (alpha * (w8t - w8s));
+                            SET w9s = w9s - (alpha * (w9t - w9s));
+                            SET w10s = w10s - (alpha * (w10t - w10s));
+                            SET w11s = w11s - (alpha * (w11t - w11s));
+                            SET w12s = w12s - (alpha * (w12t - w12s));
+                            SET w13s = w13s - (alpha * (w13t - w13s));
+                            SET w14s = w14s - (alpha * (w14t - w14s));
+                            SET w15s = w15s - (alpha * (w15t - w15s));
+                            SET w16s = w16s - (alpha * (w16t - w16s));
+                            SET w17s = w17s - (alpha * (w17t - w17s));
+                            SET w18s = w18s - (alpha * (w18t - w18s));
+                            SET w19s = w19s - (alpha * (w19t - w19s));
+                            SET w20s = w20s - (alpha * (w20t - w20s));
+                            SET w21s = w21s - (alpha * (w21t - w21s));
+                            SET w22s = w22s - (alpha * (w22t - w22s));
+
+                        END IF;
+
+                        SET alpha = alpha - (alpha * eps);
+                        UPDATE tblaccuracy SET total_data_training = i_training+1 WHERE id=(SELECT COUNT(*) FROM tblaccuracy);
+
+                        SET i_training = i_training + 1;
+                        SET temp_i_training = i_training;
+                        IF (i_training = total_training) THEN 
+                            SET temp_alpha = alpha;
+                            SELECT alpha as 'alphat', i_training as 't';
+                            SET alpha = eps;
+                        ELSEIF (alpha <= eps) THEN
+                            SET temp_alpha = alpha;
+                            SELECT alpha as 'alphaa', i_training as 't';                        
+                            SET i_training = total_training +1;
+                        END IF;
+                    ELSE
+                        LEAVE algolvq;
                     END IF;
-
-                    SELECT satisfaction INTO t FROM tbldatatraining WHERE id=i_training;
-
-                    -- cj 1 satisfied, 0 dissatisfied
-                    IF cj = 1 AND t = 1 THEN
-                        SET w1s = w1s + (alpha * (w1t - w1s));
-                        SET w2s = w2s + (alpha * (w2t - w2s));
-                        SET w3s = w3s + (alpha * (w3t - w3s));
-                        SET w4s = w4s + (alpha * (w4t - w4s));
-                        SET w5s = w5s + (alpha * (w5t - w5s));
-                        SET w6s = w6s + (alpha * (w6t - w6s));
-                        SET w7s = w7s + (alpha * (w7t - w7s));
-                        SET w8s = w8s + (alpha * (w8t - w8s));
-                        SET w9s = w9s + (alpha * (w9t - w9s));
-                        SET w10s = w10s + (alpha * (w10t - w10s));
-                        SET w11s = w11s + (alpha * (w11t - w11s));
-                        SET w12s = w12s + (alpha * (w12t - w12s));
-                        SET w13s = w13s + (alpha * (w13t - w13s));
-                        SET w14s = w14s + (alpha * (w14t - w14s));
-                        SET w15s = w15s + (alpha * (w15t - w15s));
-                        SET w16s = w16s + (alpha * (w16t - w16s));
-                        SET w17s = w17s + (alpha * (w17t - w17s));
-                        SET w18s = w18s + (alpha * (w18t - w18s));
-                        SET w19s = w19s + (alpha * (w19t - w19s));
-                        SET w20s = w20s + (alpha * (w20t - w20s));
-                        SET w21s = w21s + (alpha * (w21t - w21s));
-                        SET w22s = w22s + (alpha * (w22t - w22s));
-
-                    ELSEIF cj = 0 AND t = 0 THEN
-                        SET w1ns = w1ns + (alpha * (w1t - w1ns));
-                        SET w2ns = w2ns + (alpha * (w2t - w2ns));
-                        SET w3ns = w3ns + (alpha * (w3t - w3ns));
-                        SET w4ns = w4ns + (alpha * (w4t - w4ns));
-                        SET w5ns = w5ns + (alpha * (w5t - w5ns));
-                        SET w6ns = w6ns + (alpha * (w6t - w6ns));
-                        SET w7ns = w7ns + (alpha * (w7t - w7ns));
-                        SET w8ns = w8ns + (alpha * (w8t - w8ns));
-                        SET w9ns = w9ns + (alpha * (w9t - w9ns));
-                        SET w10ns = w10ns + (alpha * (w10t - w10ns));
-                        SET w11ns = w11ns + (alpha * (w11t - w11ns));
-                        SET w12ns = w12ns + (alpha * (w12t - w12ns));
-                        SET w13ns = w13ns + (alpha * (w13t - w13ns));
-                        SET w14ns = w14ns + (alpha * (w14t - w14ns));
-                        SET w15ns = w15ns + (alpha * (w15t - w15ns));
-                        SET w16ns = w16ns + (alpha * (w16t - w16ns));
-                        SET w17ns = w17ns + (alpha * (w17t - w17ns));
-                        SET w18ns = w18ns + (alpha * (w18t - w18ns));
-                        SET w19ns = w19ns + (alpha * (w19t - w19ns));
-                        SET w20ns = w20ns + (alpha * (w20t - w20ns));
-                        SET w21ns = w21ns + (alpha * (w21t - w21ns));
-                        SET w22ns = w22ns + (alpha * (w22t - w22ns));
-
-                    ELSEIF cj = 0 AND t = 1 THEN                
-                        SET w1ns = w1ns - (alpha * (w1t - w1ns));
-                        SET w2ns = w2ns - (alpha * (w2t - w2ns));
-                        SET w3ns = w3ns - (alpha * (w3t - w3ns));
-                        SET w4ns = w4ns - (alpha * (w4t - w4ns));
-                        SET w5ns = w5ns - (alpha * (w5t - w5ns));
-                        SET w6ns = w6ns - (alpha * (w6t - w6ns));
-                        SET w7ns = w7ns - (alpha * (w7t - w7ns));
-                        SET w8ns = w8ns - (alpha * (w8t - w8ns));
-                        SET w9ns = w9ns - (alpha * (w9t - w9ns));
-                        SET w10ns = w10ns - (alpha * (w10t - w10ns));
-                        SET w11ns = w11ns - (alpha * (w11t - w11ns));
-                        SET w12ns = w12ns - (alpha * (w12t - w12ns));
-                        SET w13ns = w13ns - (alpha * (w13t - w13ns));
-                        SET w14ns = w14ns - (alpha * (w14t - w14ns));
-                        SET w15ns = w15ns - (alpha * (w15t - w15ns));
-                        SET w16ns = w16ns - (alpha * (w16t - w16ns));
-                        SET w17ns = w17ns - (alpha * (w17t - w17ns));
-                        SET w18ns = w18ns - (alpha * (w18t - w18ns));
-                        SET w19ns = w19ns - (alpha * (w19t - w19ns));
-                        SET w20ns = w20ns - (alpha * (w20t - w20ns));
-                        SET w21ns = w21ns - (alpha * (w21t - w21ns));
-                        SET w22ns = w22ns - (alpha * (w22t - w22ns));
-
-                    ELSEIF cj = 1 AND t = 0 THEN                
-                        SET w1s = w1s - (alpha * (w1t - w1s));
-                        SET w2s = w2s - (alpha * (w2t - w2s));
-                        SET w3s = w3s - (alpha * (w3t - w3s));
-                        SET w4s = w4s - (alpha * (w4t - w4s));
-                        SET w5s = w5s - (alpha * (w5t - w5s));
-                        SET w6s = w6s - (alpha * (w6t - w6s));
-                        SET w7s = w7s - (alpha * (w7t - w7s));
-                        SET w8s = w8s - (alpha * (w8t - w8s));
-                        SET w9s = w9s - (alpha * (w9t - w9s));
-                        SET w10s = w10s - (alpha * (w10t - w10s));
-                        SET w11s = w11s - (alpha * (w11t - w11s));
-                        SET w12s = w12s - (alpha * (w12t - w12s));
-                        SET w13s = w13s - (alpha * (w13t - w13s));
-                        SET w14s = w14s - (alpha * (w14t - w14s));
-                        SET w15s = w15s - (alpha * (w15t - w15s));
-                        SET w16s = w16s - (alpha * (w16t - w16s));
-                        SET w17s = w17s - (alpha * (w17t - w17s));
-                        SET w18s = w18s - (alpha * (w18t - w18s));
-                        SET w19s = w19s - (alpha * (w19t - w19s));
-                        SET w20s = w20s - (alpha * (w20t - w20s));
-                        SET w21s = w21s - (alpha * (w21t - w21s));
-                        SET w22s = w22s - (alpha * (w22t - w22s));
-
-                    END IF;
-
-                SET alpha = alpha - (alpha * eps);
-                UPDATE tblaccuracy SET total_data_training = i_training+1 WHERE id=(SELECT COUNT(*) FROM tblaccuracy);
-                -- algoritma='LVQ' AND testing=testing_ke;
-            
-                IF (i_training = total_training) THEN 
-                    SET eps = alpha;
-                ELSEIF (alpha <= eps) THEN
-                    SET i_training = total_training +1;
+                END WHILE;                
+                SET epoch = epoch + 1;
+                IF (temp_i_training <> 0) THEN
+                    SET ptotal_data_training=ptotal_data_training + temp_i_training;
+                    SET pepoch=epoch;
+                    SELECT epoch as "epoch";
                 END IF;
-
-                SET i_training = i_training + 1;
-                    
             END WHILE;
-            
+            UPDATE tblaccuracy SET total_data_training = ptotal_data_training WHERE id=(SELECT COUNT(*) FROM tblaccuracy);
+            UPDATE tblaccuracy SET total_training = pepoch WHERE id=(SELECT COUNT(*) FROM tblaccuracy);
+            INSERT INTO tblW (testing,alpha, eps, w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12,w13,w14,w15,w16,w17,w18,w19,w20,w21,w22,w23) values
+            (
+                testing_ke
+                ,pAlpha
+                , pEps                
+                , w1s
+                , w2s
+                , w3s
+                , w4s
+                , w5s
+                , w6s
+                , w7s
+                , w8s
+                , w9s
+                , w10s
+                , w11s
+                , w12s
+                , w13s
+                , w14s
+                , w15s
+                , w16s
+                , w17s
+                , w18s
+                , w19s
+                , w20s
+                , w21s
+                , w22s
+                , w23s
+            );
+
+            INSERT INTO tblW (testing,alpha, eps, w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12,w13,w14,w15,w16,w17,w18,w19,w20,w21,w22,w23) values
+            (
+                testing_ke
+                ,pAlpha
+                , pEps                
+                , w1ns
+                , w2ns
+                , w3ns
+                , w4ns
+                , w5ns
+                , w6ns
+                , w7ns
+                , w8ns
+                , w9ns
+                , w10ns
+                , w11ns
+                , w12ns
+                , w13ns
+                , w14ns
+                , w15ns
+                , w16ns
+                , w17ns
+                , w18ns
+                , w19ns
+                , w20ns
+                , w21ns
+                , w22ns
+                , w23ns
+            );            
             -- END TRAINING
 
             -- SELECT i_training;
@@ -1230,10 +1302,6 @@ DROP PROCEDURE IF EXISTS lvq;
                     SET fn_lvq=fn_lvq+1;
                 ELSEIF info_satisfaction = 1 AND prediction=1 THEN
                     SET tp_lvq=tp_lvq+1;
-                -- ELSEIF info_satisfaction = 1 AND ws=wns THEN
-                --     UPDATE tblaccuracy SET tnull=tnull+1 WHERE algoritma="LVQ" AND testing=testing_ke;
-                -- ELSEIF info_satisfaction = 0 AND ws=wns THEN
-                --     UPDATE tblaccuracy SET fnull=fnull+1 WHERE algoritma="LVQ" AND testing=testing_ke;
                 END IF;
             SET i_testing = i_testing + 1;
             END WHILE;
@@ -1245,65 +1313,8 @@ DROP PROCEDURE IF EXISTS lvq;
                 , tp=tp_lvq
                 WHERE 
                 id = (SELECT count(*) FROM tblaccuracy)
-                -- algoritma="LVQ"
-                -- AND testing=testing_ke
                 ;
-            -- SELECT
-            --     testing_ke as 'uji s ke'
-            --     , ROUND(w1s,2) as w1s
-            --     , ROUND(w2s,2) as w2s
-            --     , ROUND(w3s,2) as w3s
-            --     , ROUND(w4s,2) as w4s
-            --     , ROUND(w5s,2) as w5s
-            --     , ROUND(w6s,2) as w6s
-            --     , ROUND(w7s,2) as w7s
-            --     , ROUND(w8s,2) as w8s
-            --     , ROUND(w9s,2) as w9s
-            --     , ROUND(w10s,2) as w10s
-            --     , ROUND(w11s,2) as w11s
-            --     , ROUND(w12s,2) as w12s
-            --     , ROUND(w13s,2) as w13s
-            --     , ROUND(w14s,2) as w14s
-            --     , ROUND(w15s,2) as w15s
-            --     , ROUND(w16s,2) as w16s
-            --     , ROUND(w17s,2) as w17s
-            --     , ROUND(w18s,2) as w18s
-            --     , ROUND(w19s,2) as w19s
-            --     , ROUND(w20s,2) as w20s
-            --     , ROUND(w21s,2) as w21s
-            --     , ROUND(w22s,2) as w22s
-            --     ;
-
-            -- SELECT 
-            --     testing_ke as 'uji ns ke'
-            --     , ROUND(w1ns,2) as w1ns
-            --     , ROUND(w2ns,2) as w2ns
-            --     , ROUND(w3ns,2) as w3ns
-            --     , ROUND(w4ns,2) as w4ns
-            --     , ROUND(w5ns,2) as w5ns
-            --     , ROUND(w6ns,2) as w6ns
-            --     , ROUND(w7ns,2) as w7ns
-            --     , ROUND(w8ns,2) as w8ns
-            --     , ROUND(w9ns,2) as w9ns
-            --     , ROUND(w10ns,2) as w10ns
-            --     , ROUND(w11ns,2) as w11ns
-            --     , ROUND(w12ns,2) as w12ns
-            --     , ROUND(w13ns,2) as w13ns
-            --     , ROUND(w14ns,2) as w14ns
-            --     , ROUND(w15ns,2) as w15ns
-            --     , ROUND(w16ns,2) as w16ns
-            --     , ROUND(w17ns,2) as w17ns
-            --     , ROUND(w18ns,2) as w18ns
-            --     , ROUND(w19ns,2) as w19ns
-            --     , ROUND(w20ns,2) as w20ns
-            --     , ROUND(w21ns,2) as w21ns
-            --     , ROUND(w22ns,2) as w22ns
-            --     ;
-
-            SELECT testing_ke as 'selesai uji ke';
-        -- SET testing_ke = testing_ke + 1;
-        -- END WHILE;
-        -- Call selectdata('training', 'id<5');
+            SELECT testing_ke as 'selesai uji ke', pAlpha as 'a', pEps as 'eps';
     END ##
     DELIMITER ;
 
@@ -1321,6 +1332,28 @@ DROP PROCEDURE IF EXISTS processl;
     END ##
     DELIMITER ;
 
+DROP PROCEDURE IF EXISTS processlvq;
+    DELIMITER ##
+    CREATE PROCEDURE processlvq()
+    BEGIN
+        -- CALL preprocessing();
+        CALL processl(0.9,0.0000001);
+        CALL processl(0.9,0.0001);
+        CALL processl(0.9,0.01);
+
+        CALL processl(0.1,0.0000001);
+        CALL processl(0.1,0.0001);
+        CALL processl(0.1,0.01);
+
+        CALL processl(0.01,0.0000001);
+        CALL processl(0.01,0.0001);       
+
+        CALL processl(0.05,0.0000001);
+        CALL processl(0.05,0.0001);
+        
+        END ##
+    DELIMITER ;
+    
 DROP PROCEDURE IF EXISTS process;
     DELIMITER ##
     CREATE PROCEDURE process()
@@ -1333,3 +1366,6 @@ DROP PROCEDURE IF EXISTS process;
         END ##
     DELIMITER ;
     
+
+-- SELECT id,testing,ROUND(w1,2) as w1,ROUND(w2,2) as w2,ROUND(w3,2) as w3,ROUND(w4,2) as w4,ROUND(w5,2) as w5,ROUND(w6,2) as w6,ROUND(w7,2) as w7,ROUND(w8,2) as 8w,ROUND(w9,2) as w9,ROUND(w10,2) as w10,ROUND(w11,2) as w11,ROUND(w12,2) as w12,ROUND(w13,2) as w13
+-- ,ROUND(w14,2) as w14,ROUND(w15,2) as w15,ROUND(w16,2) as w16,ROUND(w17,2) as w17,ROUND(w18,2) as w18,ROUND(w19,2) as w19,ROUND(w20,2) as w20,ROUND(w21,2) as w21,ROUND(w22,2) as w22,ROUND(w23,2) as w23 FROM tblW;
