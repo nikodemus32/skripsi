@@ -59,7 +59,6 @@ CREATE TABLE tbldataprocess(
 ) engine=InnoDB;
 
 LOAD DATA LOCAL INFILE 'airline_passenger_satisfaction.csv'
--- LOAD DATA LOCAL INFILE 'dbaps.csv'
     INTO TABLE tbldata
     FIELDS TERMINATED BY ','
     ENCLOSED BY ''
@@ -472,14 +471,6 @@ CREATE TABLE tblaccuracy (
     , accuracy FLOAT(4,2)
 );
 
--- INSERT INTO tblaccuracy(algoritma, testing, total_data_training, tp,tn,fp,fn,tnull,fnull) VALUES
--- ('Bayesian', 1,0,0,0,0,0,0,0)
--- ,('Bayesian', 2,0,0,0,0,0,0,0)
--- ,('Bayesian', 3,0,0,0,0,0,0,0)
--- ,('Bayesian', 4,0,0,0,0,0,0,0)
--- ,('Bayesian', 5,0,0,0,0,0,0,0)
--- ;
-
 CREATE TABLE tblW(
     id INT PRIMARY KEY AUTO_INCREMENT
     ,testing INT
@@ -509,11 +500,7 @@ CREATE TABLE tblW(
     ,w22 FLOAT(30,20)
     ,w23 FLOAT(30,20)
 );
--- ,('LVQ', 1,0,0,0,0,0,0,0)
--- ,('LVQ', 2,0,0,0,0,0,0,0)
--- ,('LVQ', 3,0,0,0,0,0,0,0)
--- ,('LVQ', 4,0,0,0,0,0,0,0)
--- ,('LVQ', 5,0,0,0,0,0,0,0);
+
 
 DROP PROCEDURE IF EXISTS bayesian;
     DELIMITER ##
@@ -547,8 +534,6 @@ DROP PROCEDURE IF EXISTS bayesian;
         
         SET testing_ke = number_of_testing;
 
-        -- WHILE uji ke
-        -- WHILE testing_ke <= 5 DO
             IF testing_ke = 1 THEN SET total_training = 0.9 * total_data;
             ELSEIF testing_ke = 2 THEN SET total_training = 0.75 * total_data;
             ELSEIF testing_ke = 3 THEN SET total_training = 0.5 * total_data;
@@ -696,29 +681,8 @@ DROP PROCEDURE IF EXISTS bayesian;
             SET i_testing = i_testing+1;
             END WHILE;
             
-            -- UPDATE tblaccuracy SET total_data=total_testing WHERE algoritma="LVQ" AND testing=testing_ke;
-            -- END WHILE per baris
-
-            -- call selectdata('testing', 'prediksi<>1 AND prediksi <>0');
-            -- UPDATE tblaccuracy SET accuracy=
-            -- (
-            --   (SELECT tp FROM tblaccuracy  WHERE algoritma="Bayesian" AND testing=testing_ke) 
-            -- + (SELECT tn FROM tblaccuracy  WHERE algoritma="Bayesian" AND testing=testing_ke)
-            -- )
-            -- / 
-            -- (
-            --     (SELECT tp FROM tblaccuracy  WHERE algoritma="Bayesian" AND testing=testing_ke)
-            -- + (SELECT tn FROM tblaccuracy  WHERE algoritma="Bayesian" AND testing=testing_ke)
-            -- + (SELECT fp FROM tblaccuracy  WHERE algoritma="Bayesian" AND testing=testing_ke)
-            -- + (SELECT fn FROM tblaccuracy  WHERE algoritma="Bayesian" AND testing=testing_ke)
-            -- + (SELECT tnull FROM tblaccuracy  WHERE algoritma="Bayesian" AND testing=testing_ke) 
-            -- + (SELECT fnull FROM tblaccuracy  WHERE algoritma="Bayesian" AND testing=testing_ke)
-            -- )
-            -- WHERE algoritma="Bayesian" AND testing=testing_ke;
             SELECT testing_ke as 'selesai uji ke';
-        -- SET testing_ke = testing_ke+1;
-        -- END WHILE;
-        -- END WHILE uji ke
+
     END ##
     DELIMITER ;
 
@@ -726,10 +690,7 @@ DROP PROCEDURE IF EXISTS processb;
     DELIMITER ##
     CREATE PROCEDURE processb()
     BEGIN    
-        -- UPDATE tblaccuracy SET total_data=0, tp=0, tn=0, fp=0, fn=0,tnull=0,fnull=0 WHERE algoritma = 'Bayesian' AND testing >=2;
-        -- CALL preprocessing();
-        -- CALL bayesian();
-        -- CALL bayesian(1);
+        CALL bayesian(1);
         CALL bayesian(2);
         CALL bayesian(3);
         CALL bayesian(4);
@@ -886,8 +847,6 @@ DROP PROCEDURE IF EXISTS lvq;
         SET testing_ke = number_of_testing;
         SET maxepoch=5;
 
-        -- WHILE testing_ke <= 5 DO
-        
             IF testing_ke = 1 THEN SET total_training = 0.9 * total_data;
                 ELSEIF testing_ke = 2 THEN SET total_training = 0.75 * total_data;
                 ELSEIF testing_ke = 3 THEN SET total_training = 0.5 * total_data;
@@ -896,7 +855,7 @@ DROP PROCEDURE IF EXISTS lvq;
                 END IF;
             TRUNCATE tbldatatesting;
             TRUNCATE tbldatatraining;
-            -- SET total_training = 0.1 * total_data;
+
             SET total_testing = total_data-total_training;
             SET i_testing = 1;
             SET i_training = 1;
@@ -925,8 +884,7 @@ DROP PROCEDURE IF EXISTS lvq;
             ELSE
                 SET eps = pEps;
             END IF;
-            -- 130000
-            -- SET err = 1;
+
             -- get id from each class
             SELECT id INTO ids FROM tbldatatraining WHERE satisfaction = 1 ORDER BY RAND() LIMIT 1;
             SELECT id INTO idns FROM tbldatatraining WHERE satisfaction = 0 ORDER BY RAND() LIMIT 1;
@@ -1335,8 +1293,7 @@ DROP PROCEDURE IF EXISTS processl;
 DROP PROCEDURE IF EXISTS processlvq;
     DELIMITER ##
     CREATE PROCEDURE processlvq()
-    BEGIN
-        -- CALL preprocessing();
+    BEGIN        
         CALL processl(0.9,0.0000001);
         CALL processl(0.9,0.0001);
         CALL processl(0.9,0.01);
@@ -1358,7 +1315,7 @@ DROP PROCEDURE IF EXISTS process;
     DELIMITER ##
     CREATE PROCEDURE process()
     BEGIN
-        -- CALL preprocessing();
+        
         CALL processl(0,0);
         CALL processb();
         SELECT * FROM tblaccuracy;
